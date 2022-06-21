@@ -1,4 +1,4 @@
-﻿___TERMS_OF_SERVICE___
+___TERMS_OF_SERVICE___
 
 By creating or modifying this file you agree to Google Tag Manager's Community
 Template Gallery Developer Terms of Service available at
@@ -203,6 +203,13 @@ ___TEMPLATE_PARAMETERS___
             "type": "EQUALS"
           }
         ]
+      },
+      {
+        "type": "CHECKBOX",
+        "name": "doBody",
+        "checkboxText": "Process Request Body",
+        "simpleValueType": true,
+        "help": "check to delete, change and redact all additional parameters in the request payload as well"
       }
     ]
   }
@@ -228,13 +235,20 @@ var postBody = orgBody || null,
 //rebuild imcoming request URL and add temporary delimiter
 var url = data.newServer + requestPath + '?' + queryString;
 
+var bodyLines = postBody && (data.doBody == true) ? postBody.split("\n"): null;
+
 //eliminate parameters
 if (data.deleteParamTable && data.deleteParamTable.length > 0) {
   data.deleteParamTable.forEach(row => {
-    const found = url.match("[&?]" + row.paramName+"=[^&$]*");
-    if(found) { 
-      url = url.replace(found, '');  
-    }  
+    const foundUrl = url.match("[&?]" + row.paramName+"=[^&$]*");
+    if(foundUrl) url = url.replace(foundUrl, '');  
+    if (bodyLines) bodyLines.forEach((line, index) => {
+      const foundBody = line.match("(^|[\n&?])" + row.paramName+"=[^&$\n]*");    
+      if(foundBody) {
+        bodyLines[index] = line.replace(foundBody[0], '');
+        if (bodyLines[index][0] == "&") bodyLines[index] = bodyLines[index].substring(1);
+      }
+    });
   });
 }
 
@@ -246,20 +260,35 @@ if (data.changeParamTable && data.changeParamTable.length > 0) {
       url = url.replace(found, makeString(found).substring(0,1) + row.paramName+"=" + encodeUriComponent(row.paramValue));
     } else if (row.addParam == "yes") 
       addParams += "&"+row.paramName + "=" + encodeUriComponent(row.paramValue);
+
+    if (bodyLines) bodyLines.forEach((line, index) => {
+      const foundBody = line.match("(^|[\n&?])" + row.paramName+"=[^&$\n]*");    
+      if(foundBody) {
+        bodyLines[index] = line.replace(foundBody[0], '&' + row.paramName+"=" + encodeUriComponent(row.paramValue));
+        if (bodyLines[index][0] == "&") bodyLines[index] = bodyLines[index].substring(1);
+      }
+    });
   });
 }
 
 //add mandatory params if not found in request 
 url = url + addParams;
 
-
-//redact remaining url
+//redact remaining url and params in post body
 if (data.redactValues === true && data.redactPatterns && data.redactPatterns.length > 0) {
   data.redactPatterns.forEach(pat => {
     const redactInfo = url.match(pat.rgx);
-    if(redactInfo) url = url.replace(redactInfo, data.redactReplacement);      
+    if(redactInfo) url = url.replace(redactInfo, data.redactReplacement);     
+    if (bodyLines) bodyLines.forEach((line, index) => {
+      const foundBody = line.match(pat.rgx);    
+      if(foundBody) bodyLines[index] = line.replace(foundBody, data.redactReplacement);
+    });
+    
   });
 }
+
+if (bodyLines) postBody = bodyLines.join("\n");
+require('logToConsole')('body: ' + postBody);
 
 //send adjusted incoming GA4 request to new property without session_start and first_visit markers
 sendHttpRequest(url, {method: requestMethod, timeout: 500,}, postBody).then((result) => {
@@ -383,6 +412,27 @@ ___SERVER_PERMISSIONS___
       "isEditedByUser": true
     },
     "isRequired": true
+  },
+  {
+    "instance": {
+      "key": {
+        "publicId": "logging",
+        "versionId": "1"
+      },
+      "param": [
+        {
+          "key": "environments",
+          "value": {
+            "type": 1,
+            "string": "debug"
+          }
+        }
+      ]
+    },
+    "clientAnnotations": {
+      "isEditedByUser": true
+    },
+    "isRequired": true
   }
 ]
 
@@ -395,5 +445,3 @@ scenarios: []
 ___NOTES___
 
 Created on 20.6.2022, 21:01:03
-
-
