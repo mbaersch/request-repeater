@@ -235,7 +235,8 @@ var postBody = orgBody || null,
 //rebuild imcoming request URL and add temporary delimiter
 var url = data.newServer + requestPath + '?' + queryString;
 
-var bodyLines = postBody && (data.doBody == true) ? postBody.split("\n"): null;
+//process line by line until there is a regex API to create a regex with params for match()
+var bodyLines = postBody && (data.doBody == true) ? postBody.split("\n") : null;
 
 //eliminate parameters
 if (data.deleteParamTable && data.deleteParamTable.length > 0) {
@@ -283,7 +284,6 @@ if (data.redactValues === true && data.redactPatterns && data.redactPatterns.len
       const foundBody = line.match(pat.rgx);    
       if(foundBody) bodyLines[index] = line.replace(foundBody, data.redactReplacement);
     });
-    
   });
 }
 
