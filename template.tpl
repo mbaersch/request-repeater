@@ -14,9 +14,12 @@ ___INFO___
   "version": 1,
   "securityGroups": [],
   "displayName": "Request Repeater",
+  "categories": [
+    "UTILITY"
+  ],
   "brand": {
-    "id": "brand_dummy",
-    "displayName": ""
+    "id": "mbaersch",
+    "displayName": "mbaersch"
   },
   "description": "Edit incoming request parameters and send / forward to any endpoint",
   "containerContexts": [
