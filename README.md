@@ -4,7 +4,8 @@
 
 Change and forward incoming requests to a new endpoint 
 
-![Template Status](https://img.shields.io/badge/Community%20Template%20Gallery%20Status-submitted-orange) ![Repo Size](https://img.shields.io/github/repo-size/mbaersch/request-repeater) ![License](https://img.shields.io/github/license/mbaersch/request-repeater)
+[![Template Status](https://img.shields.io/badge/Community%20Template%20Gallery%20Status-published-green)](https://tagmanager.google.com/gallery/#/owners/mbaersch/templates/request-repeater) ![Repo Size](https://img.shields.io/github/repo-size/mbaersch/request-repeater) ![License](https://img.shields.io/github/license/mbaersch/request-repeater)
+
 
 ---
 
